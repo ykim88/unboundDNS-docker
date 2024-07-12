@@ -11,11 +11,12 @@ RUN apk upgrade --no-cache unbound
 
 RUN apk add --no-cache unbound
 
-RUN echo "include: /etc/unbound/unbound.conf.d/myunbound.conf" | cat - /etc/unbound/unbound.conf > temp && mv temp /etc/unbound/unbound.conf
+# RUN echo "include: /etc/unbound/unbound.conf.d/myunbound.conf" | cat - /etc/unbound/unbound.conf > temp && mv temp /etc/unbound/unbound.conf
 RUN sed -i 's|trust-anchor-file: /usr/share/dnssec-root/trusted-key.key|auto-trust-anchor-file: ${ANCHOR_PATH}|' /etc/unbound/unbound.conf
 RUN sed -i '/control-enable: yes/d' /etc/unbound/unbound.conf
 RUN sed -i '/control-interface: \/run\/unbound.control.sock/N; s/^.*\n//' /etc/unbound/unbound.conf
-RUN sed -i "s/# username: \"unbound\"/username: \"u_unbound\"/" /etc/unbound/unbound.conf
+RUN sed -i 's/# tls-cert-bundle: ""/tls-cert-bundle: "\/etc\/ssl\/certs\/ca-certificates.crt"/' /etc/unbound/unbound.conf
+RUN sed -i "s/# username: \"unbound\"/username: \"${USER_NAME}\"/" /etc/unbound/unbound.conf
 
 RUN addgroup -S -g "${GID}" "${GROUP_NAME}" && adduser -S -h /usr/local/"${USER_NAME}" -u "${UID}" -g "${GID}" "${USER_NAME}"
 
