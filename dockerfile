@@ -11,7 +11,7 @@ RUN apk upgrade --no-cache unbound
 
 RUN apk add --no-cache unbound
 
-# RUN echo "include: /etc/unbound/unbound.conf.d/myunbound.conf" | cat - /etc/unbound/unbound.conf > temp && mv temp /etc/unbound/unbound.conf
+RUN echo "include: /etc/unbound/unbound.conf.d/myunbound.conf" | cat - /etc/unbound/unbound.conf > temp && mv temp /etc/unbound/unbound.conf
 RUN sed -i 's|trust-anchor-file: /usr/share/dnssec-root/trusted-key.key|auto-trust-anchor-file: ${ANCHOR_PATH}|' /etc/unbound/unbound.conf
 RUN sed -i '/control-enable: yes/d' /etc/unbound/unbound.conf
 RUN sed -i '/control-interface: \/run\/unbound.control.sock/N; s/^.*\n//' /etc/unbound/unbound.conf
