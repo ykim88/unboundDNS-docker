@@ -14,7 +14,7 @@ RUN apk add --no-cache unbound
 RUN apk add --no-cache drill
 
 RUN echo "include: /etc/unbound/unbound.conf.d/myunbound.conf" | cat - /etc/unbound/unbound.conf > temp && mv temp /etc/unbound/unbound.conf
-RUN sed -i 's|trust-anchor-file: /usr/share/dnssec-root/trusted-key.key|auto-trust-anchor-file: ${ANCHOR_PATH}|' /etc/unbound/unbound.conf
+RUN sed -i "s|trust-anchor-file: \"/usr/share/dnssec-root/trusted-key.key\"|auto-trust-anchor-file: \"${ANCHOR_PATH}\"|" /etc/unbound/unbound.conf
 RUN sed -i '/control-enable: yes/d' /etc/unbound/unbound.conf
 RUN sed -i '/control-interface: \/run\/unbound.control.sock/N; s/^.*\n//' /etc/unbound/unbound.conf
 RUN sed -i 's/# tls-cert-bundle: ""/tls-cert-bundle: "\/etc\/ssl\/certs\/ca-certificates.crt"/' /etc/unbound/unbound.conf
