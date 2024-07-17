@@ -9,5 +9,6 @@ A docker version of unboundDNS
 | DNSSEC | :white_check_mark: |
 | Include single additional conf file | :white_check_mark: |
 | DoH | :white_check_mark: |
+| Container healthcheck | :white_check_mark: |
 | Support multiple additional conf files | :x: 👨‍💻 |
 | Add documentation | 👨‍💻 |
