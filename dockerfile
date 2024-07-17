@@ -6,10 +6,12 @@ ARG UID="1000"
 ARG GID="1000"
 ARG GROUP_NAME="g_unbound"
 
-RUN apk update --no-cache unbound
-RUN apk upgrade --no-cache unbound
+RUN apk update --no-cache
+RUN apk upgrade --no-cache
 
 RUN apk add --no-cache unbound
+
+RUN apk add --no-cache drill
 
 RUN echo "include: /etc/unbound/unbound.conf.d/myunbound.conf" | cat - /etc/unbound/unbound.conf > temp && mv temp /etc/unbound/unbound.conf
 RUN sed -i 's|trust-anchor-file: /usr/share/dnssec-root/trusted-key.key|auto-trust-anchor-file: ${ANCHOR_PATH}|' /etc/unbound/unbound.conf
@@ -31,5 +33,7 @@ RUN chown -Rh "${USER_NAME}":"${GROUP_NAME}" /etc/unbound/dev/log/
 USER "${USER_NAME}"
 
 RUN /usr/sbin/unbound-anchor -a ${ANCHOR_PATH} || true
+
+HEALTHCHECK --interval=1m --timeout=30s --start-period=30s --retries=3 CMD drill @127.0.0.1 google.com
 
 ENTRYPOINT /usr/sbin/unbound-checkconf && /usr/sbin/unbound -d
