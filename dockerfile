@@ -1,4 +1,4 @@
-FROM alpine:3.19 AS base
+FROM alpine:3.24.4 AS base
 
 ARG ANCHOR_PATH="/etc/unbound/root.key"
 ARG USER_NAME="u_unbound"
@@ -13,7 +13,8 @@ RUN apk add --no-cache unbound
 
 RUN apk add --no-cache drill
 
-RUN echo "include: /etc/unbound/unbound.conf.d/myunbound.conf" | cat - /etc/unbound/unbound.conf > temp && mv temp /etc/unbound/unbound.conf
+RUN sed -i 's/^[[:space:]]*interface:/#interface:/g' /etc/unbound/unbound.conf
+RUN grep -q "unbound.conf.d" /etc/unbound/unbound.conf || echo "include: /etc/unbound/unbound.conf.d/*.conf" >> /etc/unbound/unbound.conf
 RUN sed -i "s|trust-anchor-file: \"/usr/share/dnssec-root/trusted-key.key\"|auto-trust-anchor-file: \"${ANCHOR_PATH}\"|" /etc/unbound/unbound.conf
 RUN sed -i '/control-enable: yes/d' /etc/unbound/unbound.conf
 RUN sed -i '/control-interface: \/run\/unbound.control.sock/N; s/^.*\n//' /etc/unbound/unbound.conf
@@ -30,10 +31,13 @@ RUN mkdir -p /etc/unbound/unbound.conf.d
 RUN mkdir -p /etc/unbound/dev/log
 RUN chown -Rh "${USER_NAME}":"${GROUP_NAME}" /etc/unbound/dev/log/
 
+RUN mkdir -p /var/log/unbound && \
+    chown -Rh "${USER_NAME}":"${GROUP_NAME}" /var/log/unbound
+
 USER "${USER_NAME}"
 
 RUN /usr/sbin/unbound-anchor -a ${ANCHOR_PATH} || true
 
 HEALTHCHECK --interval=1m --timeout=30s --start-period=30s --retries=3 CMD drill @127.0.0.1 google.com
 
-ENTRYPOINT /usr/sbin/unbound-checkconf && /usr/sbin/unbound -d
+ENTRYPOINT ["/bin/sh", "-c", "/usr/sbin/unbound-checkconf && /usr/sbin/unbound -d"]
